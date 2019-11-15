@@ -2,7 +2,7 @@
 // Created by Filip Caladi on 27/10/2019.
 //
 
-#include "Whois_LACNIC.h"
+#include "../h_sources/Whois_LACNIC.h"
 
 Whois_LACNIC::Whois_LACNIC(char *whois_ip, char *ip, char *hostname, char *whois_hostname, bool ipv6): WhoisBase(whois_ip, ip, NULL, whois_hostname, ipv6) {
     sprintf(message, "%s\r\n",ip);

@@ -2,7 +2,7 @@
 // Created by Filip Caladi on 27/10/2019.
 //
 
-#include "WhoisBase.h"
+#include "../h_sources/WhoisBase.h"
 
 WhoisBase::WhoisBase(char *whois_ip, char *ip, char *hostname, char *whois_hostname, bool ipv6) {
     whois_name = (char*)malloc(strlen(whois_hostname));
@@ -15,11 +15,10 @@ WhoisBase::WhoisBase(char *whois_ip, char *ip, char *hostname, char *whois_hostn
     IPV6 = ipv6;
 
     if (ipv6){
-        printf("IPV6");
         sock = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
         destAddr6.sin6_family = AF_INET6;
         destAddr6.sin6_port = htons(43);
-        inet_pton(AF_INET6, "::1", &destAddr6.sin6_addr);
+        inet_pton(AF_INET6, whois_ip, &destAddr6.sin6_addr);
     }
     else {
         sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -31,22 +30,19 @@ WhoisBase::WhoisBase(char *whois_ip, char *ip, char *hostname, char *whois_hostn
 
 void WhoisBase::whois_query() {
     int err;
-    printf("%d\n", IPV6);
     if(IPV6)
         err = connect(sock, (const struct sockaddr*)(&destAddr6), sizeof(destAddr6));
     else
         err = connect(sock, (const struct sockaddr*)(&destAddr), sizeof(destAddr));
 
     if (err < 0 ){
-        printf(" Whois query connection failed\n");
-        printf("%s\n", strerror(errno));
+        printf("Could not connect to whois server\nExiting ...\n");
         exit(-1);
     }
 
     err = send(sock, message, 100, 0);
     if (err < 0){
-        printf("Whois send failed\n");
-        printf("%s\n", strerror(errno));
+        printf("Could not send data to whois server\nExiting ...\n");
         exit(-1);
     }
 

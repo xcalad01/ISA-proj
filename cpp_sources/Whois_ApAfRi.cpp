@@ -2,13 +2,13 @@
 // Created by Filip Caladi on 27/10/2019.
 //
 
-#include "Whois_ARIN.h"
+#include "../h_sources/Whois_ApAfRi.h"
 
-Whois_ARIN::Whois_ARIN(char *whois_ip, char *ip, char *hostname, char *whois_hostname, bool ipv6): WhoisBase(whois_ip, ip, NULL, whois_hostname, ipv6) {
+Whois_ApAfRi::Whois_ApAfRi(char *whois_ip, char *ip, char *hostname, char *whois_hostname, bool ipv6): WhoisBase(whois_ip, ip, NULL, whois_hostname, ipv6) {
     sprintf(message, "%s\r\n",ip);
 }
 
-void Whois_ARIN::parse_response() {
+void Whois_ApAfRi::parse_response() {
     response.append("\n");
     list <string> duplicates;
 
@@ -24,40 +24,39 @@ void Whois_ARIN::parse_response() {
                 continue;
             }
 
-            if((line.find("NetRange")) != string::npos){
+            if((line.find("inetnum")) != string::npos){
                 printf("%s\n", line.c_str());
                 duplicates.push_front(line);
             }
-            else if((line.find("NetName")) != string::npos){
+            else if((line.find("netname")) != string::npos){
                 printf("%s\n", line.c_str());
                 duplicates.push_front(line);
             }
-            else if((line.find("OrgName")) != string::npos){
+            else if((line.find("descr")) != string::npos){
                 printf("%s\n", line.c_str());
                 duplicates.push_front(line);
             }
-            else if((line.find("Country")) != string::npos){
+            else if((line.find("country")) != string::npos){
                 printf("%s\n", line.c_str());
                 duplicates.push_front(line);
             }
-            else if((line.find("Address")) != string::npos){
+            else if((line.find("address")) != string::npos){
                 printf("%s\n", line.c_str());
                 duplicates.push_front(line);
             }
-            else if((line.find("OrgTechPhone")) != string::npos){
+            else if((line.find("phone")) != string::npos){
                 printf("%s\n", line.c_str());
                 duplicates.push_front(line);
             }
-            else if((line.find("OrgAbusePhone")) != string::npos){
+            else if((line.find("admin-c")) != string::npos){
                 printf("%s\n", line.c_str());
                 duplicates.push_front(line);
             }
-            else if((line.find("OrgAbuseHandle")) != string::npos){
-                printf("%s\n", line.c_str());
-                duplicates.push_front(line);
-            }
-            else if((line.find("OrgTechHandle")) != string::npos){
-                printf("%s\n", line.c_str());
+            else if ((line.find("% Information related to")) != string::npos){
+                int prctg_idx = line.find('%');
+                line = line.erase(0, prctg_idx);
+                printf("\n%s\n", line.c_str());
+                duplicates.clear();
                 duplicates.push_front(line);
             }
 

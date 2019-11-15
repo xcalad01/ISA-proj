@@ -2,7 +2,7 @@
 // Created by Filip Caladi on 31/10/2019.
 //
 
-#include "OtherWhois.h"
+#include "../h_sources/OtherWhois.h"
 
 OtherWhois::OtherWhois(char *whois_ip, char *ip, char *hostname, char *whois_hostname, bool ipv6): WhoisBase(whois_ip, ip, NULL, whois_hostname, ipv6){
     sprintf(message, "%s\r\n", hostname + 4);

@@ -2,7 +2,7 @@
 // Created by Filip Caladi on 09/11/2019.
 //
 
-#include "DNS_Query.h"
+#include "../h_sources/DNS_Query.h"
 
 DNS_Query::DNS_Query(char *host, char* ip, bool ip_type) {
     hostname = (char*)malloc(strlen(host));
@@ -14,75 +14,37 @@ DNS_Query::DNS_Query(char *host, char* ip, bool ip_type) {
     ipv6 = ip_type;
 }
 
-char* DNS_Query::reverseStr(string str)
+char* DNS_Query::reverse_ip_for_ptr(string str)
 {
     int pos;
     vector <string> substrs;
     char *reverse_ip = (char*)malloc(28);
     string tmp = str;
-    while((pos = tmp.find('.')) != string::npos){
+    char delimeter;
+
+    delimeter = '.';
+
+    while((pos = tmp.find(delimeter)) != string::npos){
         substrs.push_back(tmp.substr(0, pos));
         tmp = tmp.substr(pos + 1, tmp.size() - 1);
     }
     substrs.push_back(tmp);
 
-    sprintf(reverse_ip, "%s.%s.%s.%s.in-addr.arpa", substrs.at(3).c_str(), substrs.at(2).c_str(), substrs.at(1).c_str(), substrs.at(0).c_str());
 
+    sprintf(reverse_ip, "%s.%s.%s.%s.in-addr.arpa", substrs.at(3).c_str(), substrs.at(2).c_str(),
+            substrs.at(1).c_str(), substrs.at(0).c_str());
     return reverse_ip;
-}
-
-void get_ip_address(char *server, char *ip) {
-    struct addrinfo *res;
-    struct addrinfo hints;
-    memset(&hints, 0, sizeof(struct addrinfo));
-
-    hints.ai_family = AF_INET;    /* Allow IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_STREAM; /* Datagram socket */
-    hints.ai_flags |= AI_CANONNAME;    /* For wildcard IP address */
-    hints.ai_protocol = 0;          /* Any protocol */
-    hints.ai_canonname = NULL;
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
 
 
-    if (getaddrinfo(server, "0", &hints, &res) != 0) {
-        printf("getaddrinfo failed for: %s\n", server);
-        printf("%s\n", strerror(errno));
-    }
-    void *ptr;
-    void *to_return = NULL;
-    int to_return_fam = -1;
-
-    while(res) {
-        inet_ntop(res->ai_family, res->ai_addr->sa_data, ip, 100);
-
-        switch (res->ai_family) {
-            case AF_INET:
-                ptr = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
-                if (to_return == NULL) {
-                    to_return = &((struct sockaddr_in *) res->ai_addr)->sin_addr;
-                    to_return_fam = res->ai_family;
-                }
-                break;
-        }
-    }
-
-    if (to_return_fam != -1)
-        inet_ntop(to_return_fam, to_return, ip, 100);
-    else {
-        printf("Get ip address  of hostname failed!\n");
-        exit(-1);
-    }
 }
 
 void DNS_Query::run_dns() {
     string name_ser = query_for_ns(hostname);
     string host(hostname);
     struct hostent *name_ser_ip;
-    printf("TU:%s\n", name_ser.c_str());
-    name_ser_ip = gethostbyname("kazi.fit.vutbr.cz");
+    name_ser_ip = gethostbyname(name_ser.c_str());
     if(name_ser_ip == NULL){
-        printf("get_host_by_name failed: %s\n", name_ser.c_str());
+        printf("get_host_by_name failed: %s\nExiting ...", name_ser.c_str());
         exit(-1);
     }
 
@@ -91,10 +53,10 @@ void DNS_Query::run_dns() {
 
     for(int query_type : query_types) {
         if(query_type == ns_t_ptr) {
-            if (ipv6)
-                continue;
             string str(host_ip);
-            query_for_hostname_info(reverseStr(str), query_type, name_ser_ip);
+            if(ipv6)
+                continue;
+            query_for_hostname_info(reverse_ip_for_ptr(str), query_type, name_ser_ip);
         }
         else {
             if(query_type == ns_t_cname)
@@ -111,7 +73,7 @@ string DNS_Query::extract_name_server(ns_msg handle, ns_sect section) {
     ns_rr res_record;
 
     if (ns_parserr(&handle, section, 0, &res_record)){
-        printf("ERROR:Failed to parse name_server response\n");
+        printf("ERROR:Failed to parse name_server response\nExiting ...\n");
         exit(-1);
     }
 
@@ -124,11 +86,12 @@ string DNS_Query::extract_name_server(ns_msg handle, ns_sect section) {
                 response,
                 MAXDNAME) < 0)
         {
-            printf("ns_name_uncompress failed\n");
+            printf("Failed to uncompress ns_record\nExiting ...\n");
             exit(-1);
         }
     }
 
+    printf("NS: %s\n", response);
     return string(response);
 }
 
@@ -145,7 +108,6 @@ string DNS_Query::query_for_ns(string domain) {
         domain = domain.substr(4);
     }
 
-
     if((responseLen =
                 res_query(
                         domain.c_str(),
@@ -154,12 +116,12 @@ string DNS_Query::query_for_ns(string domain) {
                         (u_char*)&response,
                         sizeof(response)
                 )) < 0) {
-        //nsError(h_errno, (char *) domain.c_str());
+        printf("Could not execute query for %s\nExiting ...\n", domain.c_str());
         exit(-1);
     }
 
     if (ns_initparse(response.buf, responseLen, &handler) < 0){
-        printf("ns_initparse %s\n", strerror(errno));
+        printf("Whoops something went wrong. Try again or check input parametres\n");
         exit(-1);
     }
 
@@ -209,12 +171,10 @@ void DNS_Query::query_for_hostname_info(char *query_value, int query_type, struc
     }
 
     if (ns_initparse(response.buf, responseLen, &handle) < 0){
-        printf("ns_initparse: %s\n", strerror(errno));
         return;
     }
 
     if(ns_msg_getflag(handle, ns_f_rcode) != ns_r_noerror){
-        printf("returnCodeError\n");
         return;
     }
 
@@ -224,7 +184,7 @@ void DNS_Query::query_for_hostname_info(char *query_value, int query_type, struc
 
     if (ns_parserr(&handle, ns_s_an, 0, &resource_record)){
         if (errno != ENODEV){
-            printf("ns_parserr: %s\n", strerror(errno));
+            return;
         }
     }
 

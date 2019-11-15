@@ -7,14 +7,18 @@
 #include <errno.h>
 
 
-#include "WhoisBase.h"
-#include "Whois_ApAfRi.h"
-#include "Whois_ARIN.h"
-#include "Whois_LACNIC.h"
-#include "OtherWhois.h"
-#include "DNS_Query.h"
+#include "../h_sources/WhoisBase.h"
+#include "../h_sources/Whois_ApAfRi.h"
+#include "../h_sources/Whois_ARIN.h"
+#include "../h_sources/Whois_LACNIC.h"
+#include "../h_sources/Whois_IANA.h"
+#include "../h_sources/OtherWhois.h"
+#include "../h_sources/DNS_Query.h"
 using namespace std;
 
+/**
+ * Class for parsing arguments
+ */
 class Arguments {
 public:
     char *hostname = NULL;
@@ -72,18 +76,12 @@ private:
     }
 };
 
-class Whois_IANA: public WhoisBase{
-public:
-
-    Whois_IANA(char *whois_ip, char *ip, char* hostname, char *whois_hostname, bool ipv6): WhoisBase(whois_ip, ip, NULL, whois_hostname, ipv6){
-        sprintf(message, "%s\r\n",ip);
-    }
-
-    void parse_response(){
-        printf("%s\n", response.c_str());
-    }
-};
-
+/**
+ * Gets IP address of given server, and prints A or/and AAAA record.
+ * @param server
+ * @param ip
+ * @param print
+ */
 void get_ip_address(char *server, char *ip, bool print) {
     struct addrinfo *res;
     struct addrinfo hints;
@@ -99,8 +97,8 @@ void get_ip_address(char *server, char *ip, bool print) {
 
 
     if (getaddrinfo(server, "0", &hints, &res) != 0) {
-        printf("getaddrinfo failed for: %s\n", server);
-        printf("%s\n", strerror(errno));
+        printf("%s   Wrong IPv4/IPv6 address or hostname\nExiting ...\n", server);
+        exit(-1);
     }
     void *ptr;
     void *to_return = NULL;
@@ -141,11 +139,19 @@ void get_ip_address(char *server, char *ip, bool print) {
     if (to_return_fam != -1)
         inet_ntop(to_return_fam, to_return, ip, 100);
     else {
-        printf("Get ip address  of hostname failed!\n");
+        printf("Get ip address  of hostname failed!\nExiting\n");
         exit(-1);
     }
 }
 
+/**
+ * Checks what whois class should be instanciated, inits it and runs the class.
+ * @param whois_ip
+ * @param ip
+ * @param hostname
+ * @param whois_hostname
+ * @param ipv6
+ */
 void runWhois(char *whois_ip, char *ip, char* hostname, char *whois_hostname, bool ipv6) {
     string wh(whois_hostname);
 
@@ -179,6 +185,11 @@ void runWhois(char *whois_ip, char *ip, char* hostname, char *whois_hostname, bo
     }
 }
 
+/**
+ * Converts given IPv4 to hostname
+ * @param ip
+ * @param ret
+ */
 void ip4_to_hostname(char *ip, char *ret){
     struct hostent *host;
     struct in_addr addr;
@@ -191,7 +202,11 @@ void ip4_to_hostname(char *ip, char *ret){
     }
     strcpy(ret, host->h_name);
 }
-
+/**
+ * Converts given IPv6 to hostname
+ * @param ip
+ * @param ret
+ */
 void ip6_to_hostname(char *ip, char *ret){
     struct hostent *host;
     struct in6_addr addr;
@@ -205,18 +220,32 @@ void ip6_to_hostname(char *ip, char *ret){
     strcpy(ret, host->h_name);
 }
 
+/**
+ * Checks if given string is valid IPv4 address
+ * @param str
+ * @return True if given string is valid IPv4 address
+ */
 bool is_ipv4_address(const char* str)
 {
     struct sockaddr_in sa;
     return inet_pton(AF_INET, str, &(sa.sin_addr))!=0;
 
 }
-
+/**
+ * Checks if given string is valid IPv6 address
+ * @param str
+ * @return True if given string is valid IPv6 address
+ */
 bool is_ipv6_address(const char *str) {
     struct sockaddr_in6 sa;
     return inet_pton(AF_INET6, str, &(sa.sin6_addr)) != 0;
 }
 
+/**
+ * Main funtion
+ * @param argc number of input arguments
+ * @param argv arguments
+ */
 int main(int argc, char **argv) {
     Arguments arguments(argc, argv, (char *) "q:w:d:");
 
@@ -224,8 +253,6 @@ int main(int argc, char **argv) {
     char whois_ip[100];
 
     printf("######## DNS ########\n");
-    get_ip_address(arguments.whois_hostname, whois_ip, true);
-
     char *hostname = (char*)malloc(NI_MAXHOST);
     if (is_ipv4_address(arguments.hostname)) {
         ip4_to_hostname(arguments.hostname, hostname);
@@ -249,9 +276,10 @@ int main(int argc, char **argv) {
         ip4_to_hostname(arguments.whois_hostname, whois_hostname);
     else if((ipv6 = is_ipv6_address(arguments.whois_hostname)))
         ip6_to_hostname(arguments.whois_hostname, whois_hostname);
-    else
+    else {
         strcpy(whois_hostname, arguments.whois_hostname);
-
+        get_ip_address(arguments.whois_hostname, whois_ip, true);
+    }
 
     DNS_Query dns_query(hostname, ip, is_ipv6_address(arguments.hostname));
 

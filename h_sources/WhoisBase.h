@@ -32,6 +32,10 @@ public:
      * Function for querying whois server.
      */
     void whois_query();
+
+    /**
+     * Free resources
+     */
     void free_resources();
 
 private:
