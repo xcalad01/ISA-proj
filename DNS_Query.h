@@ -42,7 +42,7 @@ private:
     char *hostname;
     char *host_ip;
     bool ipv6;
-    int query_types[4] = {ns_t_ptr, ns_t_soa, ns_t_cname, ns_t_mx};
+    int query_types[4] = {ns_t_soa, ns_t_cname, ns_t_mx};
 
 };
 
