@@ -2,13 +2,13 @@
 // Created by Filip Caladi on 31/10/2019.
 //
 
-#include "../h_sources/OtherWhois.h"
+#include "../h_sources/Whois_Other.h"
 
-OtherWhois::OtherWhois(char *whois_ip, char *ip, char *hostname, char *whois_hostname, bool ipv6): WhoisBase(whois_ip, ip, NULL, whois_hostname, ipv6){
+Whois_Other::Whois_Other(char *whois_ip, char *ip, char *hostname, char *whois_hostname, bool ipv6): WhoisBase(whois_ip, ip, NULL, whois_hostname, ipv6){
     sprintf(message, "%s\r\n", hostname + 4);
 }
 
-void OtherWhois::parse_response() {
+void Whois_Other::parse_response() {
     response.append("\n");
     list <string> duplicates;
 
@@ -31,28 +31,28 @@ void OtherWhois::parse_response() {
         parser5(response);
     }
     else
-        printf("%s\n", response.c_str());
+        parser6(response);
 
 }
 
-void OtherWhois::prepare__print_key(string key) {
+void Whois_Other::prepare__print_key(string key) {
     key = key.substr(0, key.size()-1);
     key = std::regex_replace(key, std::regex("^ +| +$|( ) +"), "$1");
     printf("%s ", key.c_str());
 }
 
-string OtherWhois::get_line(string response, int idx) {
+string Whois_Other::get_line(string response, int idx) {
     response = response.erase(0, idx + 1);
     idx = response.find('\n');
     return response.substr(0, idx);
 }
 
-void OtherWhois::remove_trailing_print(string line) {
+void Whois_Other::remove_trailing_print(string line) {
     line.erase(line.begin(), std::find_if(line.begin(), line.end(), std::bind1st(std::not_equal_to<char>(), ' ')));
     printf("%s\n", line.c_str());
 }
 
-void OtherWhois::parser1(string response) {
+void Whois_Other::parser1(string response) {
     int idx;
     list <string> duplicates;
     string line;
@@ -94,7 +94,7 @@ void OtherWhois::parser1(string response) {
     }
 }
 
-void OtherWhois::parser2(string response) {
+void Whois_Other::parser2(string response) {
     int idx;
     list <string> duplicates;
     string line;
@@ -120,7 +120,7 @@ void OtherWhois::parser2(string response) {
     }
 }
 
-void OtherWhois::parser3(string response) {
+void Whois_Other::parser3(string response) {
     int idx;
     list<string> duplicates;
     string line;
@@ -165,7 +165,7 @@ void OtherWhois::parser3(string response) {
     }
 }
 
-void OtherWhois::parser4(string response) {
+void Whois_Other::parser4(string response) {
     int idx;
     list <string> duplicates;
     string line;
@@ -205,7 +205,7 @@ void OtherWhois::parser4(string response) {
     }
 }
 
-void OtherWhois::parser5(string response) {
+void Whois_Other::parser5(string response) {
     int idx;
     list <string> duplicates;
     string line;
@@ -223,6 +223,39 @@ void OtherWhois::parser5(string response) {
             (line.find("admin-")) != string::npos ||
             (line.find("tech-")) != string::npos ||
             (line.find("billing-")) != string::npos){
+            duplicates.push_front(line);
+            printf("%s\n", line.c_str());
+        }
+        response = response.erase(0, idx + 1);
+    }
+}
+
+void Whois_Other::parser6(string response) {
+    int idx;
+    list <string> duplicates;
+    string line;
+    while(!response.empty()) {
+        if ((idx = response.find('\n')) != string::npos) {
+            line = response.substr(0, idx);
+            if (!check_duplicates(duplicates, line)) {
+                response = response.erase(0, idx + 1);
+                continue;
+            }
+        }
+
+        if ((line.find("Domain:")) != string::npos ||
+            (line.find("domain:")) != string::npos ||
+            (line.find("registrant")) != string::npos ||
+            (line.find("Registrant")) != string::npos ||
+            (line.find("Phone")) != string::npos ||
+            (line.find("Email")) != string::npos ||
+            (line.find("range")) != string::npos ||
+            (line.find("admin")) != string::npos ||
+            (line.find("Admin")) != string::npos ||
+            (line.find("tech")) != string::npos ||
+            (line.find("address")) != string::npos ||
+            (line.find("Address")) != string::npos ||
+            (line.find("billing")) != string::npos){
             duplicates.push_front(line);
             printf("%s\n", line.c_str());
         }

@@ -1,5 +1,6 @@
 //
 // Created by Filip Caladi on 09/11/2019.
+// Code inspired by: https://docstore.mik.ua/orelly/networking_2ndEd/dns/ch15_02.htm
 //
 
 #include "../h_sources/DNS_Query.h"

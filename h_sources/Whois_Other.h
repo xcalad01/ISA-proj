@@ -11,9 +11,9 @@ using namespace std;
 #define UNTITLED_OTHERWHOIS_H
 
 
-class OtherWhois: public WhoisBase{
+class Whois_Other: public WhoisBase{
 public:
-    OtherWhois(char *whois_ip, char *ip, char* hostname, char *whois_hostname, bool ipv6);
+    Whois_Other(char *whois_ip, char *ip, char* hostname, char *whois_hostname, bool ipv6);
     void parse_response();
 
 private:
@@ -25,6 +25,7 @@ private:
     void parser3(string response);
     void parser4(string response);
     void parser5(string response);
+    void parser6(string response);
 
 };
 

@@ -12,7 +12,7 @@
 #include "../h_sources/Whois_ARIN.h"
 #include "../h_sources/Whois_LACNIC.h"
 #include "../h_sources/Whois_IANA.h"
-#include "../h_sources/OtherWhois.h"
+#include "../h_sources/Whois_Other.h"
 #include "../h_sources/DNS_Query.h"
 using namespace std;
 
@@ -178,7 +178,7 @@ void runWhois(char *whois_ip, char *ip, char* hostname, char *whois_hostname, bo
         whois.parse_response();
         whois.free_resources();
     } else {
-        OtherWhois whois(whois_ip, ip, hostname, whois_hostname, ipv6);
+        Whois_Other whois(whois_ip, ip, hostname, whois_hostname, ipv6);
         whois.whois_query();
         whois.parse_response();
         whois.free_resources();
@@ -197,8 +197,8 @@ void ip4_to_hostname(char *ip, char *ret){
     errno = 0;
     host = gethostbyaddr(&addr, sizeof(ip), AF_INET);
     if (host == NULL){
-        printf("IP6%s\n", strerror(errno));
-        exit(0);
+        printf("Cant resolve %s to hostname\nExiting...\n", ip);
+        exit(-1);
     }
     strcpy(ret, host->h_name);
 }
@@ -214,8 +214,8 @@ void ip6_to_hostname(char *ip, char *ret){
     errno = 0;
     host = gethostbyaddr(&addr, sizeof(addr), AF_INET6);
     if (host == NULL){
-        printf("IP6%s\n", strerror(errno));
-        exit(0);
+        printf("Cant resolve %s to hostname\nExiting...\n", ip);
+        exit(-1);
     }
     strcpy(ret, host->h_name);
 }
@@ -278,7 +278,7 @@ int main(int argc, char **argv) {
         ip6_to_hostname(arguments.whois_hostname, whois_hostname);
     else {
         strcpy(whois_hostname, arguments.whois_hostname);
-        get_ip_address(arguments.whois_hostname, whois_ip, true);
+        get_ip_address(arguments.whois_hostname, whois_ip, false);
     }
 
     DNS_Query dns_query(hostname, ip, is_ipv6_address(arguments.hostname));

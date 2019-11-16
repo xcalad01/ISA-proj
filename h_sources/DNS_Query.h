@@ -3,20 +3,14 @@
 //
 
 #include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/nameser.h>
-#include <resolv.h>
 #include <errno.h>
 #include <string>
 #include <cstring>
 #include <list>
-#include <arpa/inet.h>
 #include <vector>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/nameser.h>
 #include <resolv.h>
+#include <netdb.h>
+#include <sys/socket.h>
 
 using namespace std;
 #ifndef UNTITLED_DNS_QUERY_H

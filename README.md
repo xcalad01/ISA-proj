@@ -1,12 +1,12 @@
 # ISA-Whois tazatel
-Tento projekt sa zaobera problematikou ziskavania DNS zaznamov (SOA, MX, CNAME ...) a dotazavia sa na **whois server** pre rozsirene informacie o zadanom hostname.
+Tento projekt sa zaoberá problematikou získavania DNS záznamov (SOA, MX, CNAME ...) a dalších rozšírených informacií z rôznych **WHOIS** serverov o zadanom **hostname** s využitím knižníc **BSD Sockets**, **resolv** a ďalších potrebných pre vytvorenie dns dotazov a ich parsovanie.
 
-Program je rozdeleny do niekolkych cpp/h suborov podla nasledujucich kriterii:
-* DNS query
-* Internet service providers whois (niektore su spojene to jednej cpp Class nakolko pozaduju rovnaku hodnoty v query a vracaju response v rovnakom formate)
-* Other whois servery
+Program je rozdelený do niekoľkých cpp/h súborov podľa nasledujúcich kriterií:
+* DNS query (sekcia zaoberujúca sa dotazovaním a parsovaním DNS záznamov)
+* Whois_[Internet Service Providers] (niektoré su spojené do jednej triedy nakoľko požadujú rovnakú hodnotu v dotaze na záznam a taktiež vracajú výsledok v rovnakom formáte)
+* Ostatné Whois servery
 
-## Priklad spustenia
+## Príklad spustenia
 ./whois **-q** hostname/IPv4/IPv6 **-w** hostname/IPv4/IPv6
 
 
@@ -17,6 +17,6 @@ Program je rozdeleny do niekolkych cpp/h suborov podla nasledujucich kriterii:
 
 ## Zoznam odovzdanych suborov
 * Makefile
-* cpp_sources - obsahuje vsetky zdrojove subory
-* h_sources - obsahuje vsetky hlavickove subory
+* cpp_sources - obsahuje všetky zdrojové súbory
+* h_sources - obsahuje všetky hlavičkové súbory
 * README
