@@ -20,3 +20,4 @@ Program je rozdelený do niekoľkých cpp/h súborov podľa nasledujúcich krite
 * cpp_sources - obsahuje všetky zdrojové súbory
 * h_sources - obsahuje všetky hlavičkové súbory
 * README
+* manual.pdf
